@@ -25,8 +25,16 @@ You can handle the execution by key pressing (Case sensitive)
 [h] Show script usage
 ```
 
+----
+#### Procedure explained
 
+- Start the script
+- press **T**
+- type 250
+- press **S**
+- in another window, open the log file.
 
+The script will basically scan the proc directory for processes that have inet connection. We can use a pretty consistent work code abstracted in psutil library to accomplish this scan with great performatic and with a multi plataform way.
 
 
 ----
