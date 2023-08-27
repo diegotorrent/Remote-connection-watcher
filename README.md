@@ -3,16 +3,16 @@
 
 ### SCRIPT USAGE
 ----
-(h) Show script usage
-(t) Show terminal number of lines
-(T) Define SLEEP time
-(C) Show actual connections
-(R) Show remote IP list
-(W) Save data to file keyModuleInfo.txt
-(D) Process DNS entries of remote IP list
-(S) Switch LOOP state
-(i) Show cpu_info
-(Q) Quit
+* (h) Show script usage
+* (t) Show terminal number of lines
+* (T) Define SLEEP time
+* (C) Show actual connections
+* (R) Show remote IP list
+* (W) Save data to file keyModuleInfo.txt
+* (D) Process DNS entries of remote IP list
+* (S) Switch LOOP state
+* (i) Show cpu_info
+* (Q) Quit
 
 ----
 
