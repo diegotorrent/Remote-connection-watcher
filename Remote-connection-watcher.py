@@ -1,18 +1,24 @@
+# Remote connection watcher
+## Python script for monitoring remote connections
+##### By DFT
+##### 2023-08-27
+
 import curses
 import socket
 import threading
-import time
-
 import psutil
+import time
 import datetime
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+LOG_FILE = "keyModuleInfo.txt"
 
 LOOP = False
 
 SLEEP = 2000  # Milliseconds
 
-AUTO_SAVE_TIMER = 90  # Seconds
+AUTO_SAVE_TIMER = 180  # Seconds
 
 REMOTE_IPS = []
 
@@ -30,8 +36,10 @@ def cpu_info():
 
 
 def save_data():
+    # Dumping the data to log
+    global LOG_FILE
     try:
-        with open("keyModuleInfo.txt", "a") as fp:
+        with open(LOG_FILE, "a") as fp:
             fp.write("\n" + "-" * 80 + "\n")
             fp.write("Remote IP list\t\t\t" + "Count: " + str(len(REMOTE_IPS)) + "\t\t" + datetime.datetime.now().strftime(DATE_FORMAT) + "\n")
             for r in REMOTE_IPS:
@@ -89,17 +97,19 @@ def dns_info():
 
         for (i, ip) in enumerate(REMOTE_IPS):
 
-            if i > 25: break
-
             ip_address = str(ip.split(":")[0])
 
             if ip_address not in DNS_LOOKUP:
 
+                rev_dns = get_reverse_dns(ip_address)
+
                 DNS_LOOKUP.append(ip_address)
 
-                DNS_REV.append(get_reverse_dns(ip_address))
+                if rev_dns != "Reverse DNS not found":
+                    DNS_REV.append(rev_dns)
 
-                saida += "\n" + "-" * 80 + "\nIP: " + ip_address + "\n" + str(get_reverse_dns(ip_address))
+                if i < 25: 
+                    saida += "\n" + "-" * 80 + "\nIP: " + ip_address + "\n" + str(rev_dns)
                 
     except Exception as e:
         saida = str(e)
@@ -116,16 +126,21 @@ def get_reverse_dns(ip_address):
 
 
 def auto_save(terminal_screen):
+    # Auto save loop
     global LOOP, AUTO_SAVE_TIMER
     while True:
+        LOOP = False
         terminal_screen.addstr("\nAuto saving data... Please wait")
         terminal_screen.refresh()
         terminal_screen.addstr("\nReverse DNS checking.")
         terminal_screen.refresh()
+        # Checking the reverse DNS info before write the logs
         dns_info()
         terminal_screen.addstr("\nWriting file...")
         terminal_screen.refresh()
+        # Saving the data
         save_data()
+        LOOP = True
         terminal_screen.addstr("Done!\n")
         terminal_screen.refresh()
         time.sleep(AUTO_SAVE_TIMER)
@@ -137,6 +152,7 @@ def main(terminal_screen):
     terminal_screen.clear()
     terminal_screen.timeout(SLEEP)
     terminal_screen.addstr("Script in execution. Press 'q' to leave or 'h' to show script usage.\n")
+    
     timer_thread = threading.Thread(target=auto_save, args=(terminal_screen,))
     timer_thread.daemon = True
     timer_thread.start()
@@ -169,13 +185,9 @@ def main(terminal_screen):
 
         if key == ord('W'):
             # Save data to file keyModuleInfo.txt
-
             terminal_screen.addstr("\nSaving the data to the output file keyModuleInfo.txt\n")
-
             terminal_screen.refresh()
-
             save_data()
-
             terminal_screen.addstr("\nDone! Data saved.\n\t\t\tPress `S` to continue looping.")
             terminal_screen.refresh()
 
@@ -187,15 +199,11 @@ def main(terminal_screen):
         if key == ord('D'):
             # Process DNS entries of remote IP list
             terminal_screen.clear()
-
-            terminal_screen.addstr("\nProcessing DNS entries of remote IP list with size: " + str(len(REMOTE_IPS)) + "\n")
-
+            terminal_screen.addstr("\nProcessing DNS entries of remote IP list with size: " + str(len(REMOTE_IPS)) + ". Wait...\n")
             terminal_screen.refresh()
             for (i, row) in enumerate(dns_info().split("\n")[:20]):
                 terminal_screen.addstr(str(row) + "\n")
-
             terminal_screen.addstr("\n\n\t\t\tPress `S` to continue looping.")
-
             terminal_screen.refresh()
 
         if key == ord('T'):
