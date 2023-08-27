@@ -84,19 +84,25 @@ def help_info():
 def dns_info():
     global REMOTE_IPS, DNS_REV, DNS_LOOKUP
 
-    saida = ""
+    try:
+        saida = ""
 
-    for (i, ip) in enumerate(REMOTE_IPS):
+        for (i, ip) in enumerate(REMOTE_IPS):
 
-        ip_address = str(ip.split(":")[0])
+            if i > 25: break
 
-        if ip_address not in DNS_LOOKUP:
+            ip_address = str(ip.split(":")[0])
 
-            DNS_LOOKUP.append(ip_address)
+            if ip_address not in DNS_LOOKUP:
 
-            DNS_REV.append(get_reverse_dns(ip_address))
+                DNS_LOOKUP.append(ip_address)
 
-            saida += "\n" + "-" * 80 + "\nIP: " + ip_address + "\n" + str(get_reverse_dns(ip_address))
+                DNS_REV.append(get_reverse_dns(ip_address))
+
+                saida += "\n" + "-" * 80 + "\nIP: " + ip_address + "\n" + str(get_reverse_dns(ip_address))
+                
+    except Exception as e:
+        saida = str(e)
 
     return saida
 
@@ -112,7 +118,6 @@ def get_reverse_dns(ip_address):
 def auto_save(terminal_screen):
     global LOOP, AUTO_SAVE_TIMER
     while True:
-        LOOP = False
         terminal_screen.addstr("\nAuto saving data... Please wait")
         terminal_screen.refresh()
         terminal_screen.addstr("\nReverse DNS checking.")
@@ -123,7 +128,6 @@ def auto_save(terminal_screen):
         save_data()
         terminal_screen.addstr("Done!\n")
         terminal_screen.refresh()
-        LOOP = True
         time.sleep(AUTO_SAVE_TIMER)
 
 
@@ -165,7 +169,6 @@ def main(terminal_screen):
 
         if key == ord('W'):
             # Save data to file keyModuleInfo.txt
-            LOOP = False
 
             terminal_screen.addstr("\nSaving the data to the output file keyModuleInfo.txt\n")
 
@@ -187,14 +190,9 @@ def main(terminal_screen):
 
             terminal_screen.addstr("\nProcessing DNS entries of remote IP list with size: " + str(len(REMOTE_IPS)) + "\n")
 
-            terminal_screen.addstr("\nPlease wait!\n")
-
             terminal_screen.refresh()
-            for (i, row) in enumerate(dns_info().split("\n")[:25]):
+            for (i, row) in enumerate(dns_info().split("\n")[:20]):
                 terminal_screen.addstr(str(row) + "\n")
-
-            LOOP = False
-            terminal_screen.addstr("\nDone!\n")
 
             terminal_screen.addstr("\n\n\t\t\tPress `S` to continue looping.")
 
